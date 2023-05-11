@@ -1,0 +1,217 @@
+-------------------------------------------------------------------------------
+--
+-- File         : rw_memory.vhd
+-- Author       : Dominik Domanski
+-- Date         : 12/08/10
+--
+-- Last Check-in :
+-- $Revision: 107 $
+-- $Author: dzunior $
+-- $Date: 2010-09-25 01:42:35 +0200 (sáb, 25 sep 2010) $
+--
+-------------------------------------------------------------------------------
+-- Description:
+--  RW_MEMORY test - single write and read memory ops
+-------------------------------------------------------------------------------
+library std;
+use std.textio.all;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_textio.all;
+use ieee.numeric_std.all;
+
+library Acc_tb;
+use Acc_tb.Acc_tb_pkg.all;
+use Acc_tb.AccTbTypes.all;
+library GS_RANDOM;
+use GS_random.rng2.all;
+library Acc;
+use Acc.AccTypes.all;
+use Acc.common.all;
+
+entity test is
+end test;
+
+architecture tb of test is
+-- Main signals, types
+--signal data : std_logic_vector(15 downto 0);
+
+begin
+-- Main Test Process
+    process
+    
+    variable outline : LINE;
+    variable random_uniform : uniform;
+	variable random : integer;
+    variable expected_data : integer;
+    variable data : unsigned(15 downto 0);
+    variable src_addr,dst_addr,x1,x2,y1,y2 : unsigned(HADDR_WIDTH-1 downto 0);
+    
+        begin
+        -- The start signal is asserted once all initialisation has taken place
+        wait until (start='1');
+        LOG("TEST START: RW_MEMORY");
+        -- time needed to finish CLEAR_MEM
+        wait for 15 ms;
+        -- 1. Check if clear_mem was corrctly done - 5 lines only
+        src_addr:=(others=>'0');
+        dst_addr:=(others=>'0');
+		random_uniform:=InitUniform(0, 2.0, 600.0);
+		-- for z in 0 to 800 loop
+			-- write_memory(regH,SDRAM,MEM,'0',src_addr+z,to_unsigned(z,16));
+		-- end loop;	
+		for b in 0 to 10 loop
+			for a in 1 to 600 loop
+				--write_memory(regH,SDRAM,MEM,'0',src_addr,to_unsigned(a,16));
+				GenRnd(random_uniform);
+				random:=integer(random_uniform.rnd);
+				x1:=to_unsigned(random,HADDR_WIDTH);
+				GenRnd(random_uniform);
+				random:=integer(random_uniform.rnd);
+				y1:=to_unsigned(random,HADDR_WIDTH);
+				GenRnd(random_uniform);
+				random:=integer(random_uniform.rnd);
+				x2:=to_unsigned(random,HADDR_WIDTH);
+				GenRnd(random_uniform);
+				random:=integer(random_uniform.rnd);
+				y2:=to_unsigned(random,HADDR_WIDTH);
+				GenRnd(random_uniform);
+				random:=integer(random_uniform.rnd);
+				src_addr:=to_unsigned(random,HADDR_WIDTH);
+				GenRnd(random_uniform);
+				random:=integer(random_uniform.rnd);
+				dst_addr:=to_unsigned(random,HADDR_WIDTH);
+				for i in 0 to 100 loop
+					write_memory(regH,SDRAM,MEM,'0',y1+i,x"FFFF");
+				end loop;
+				mem_copy(regH,SDRAM,SDRAM,src_addr,dst_addr,556);
+				for i in 0 to 100 loop
+					write_memory(regH,SDRAM,MEM,'0',src_addr+i,x"FFFF");
+					write_memory(regH,SDRAM,MEM,'0',dst_addr+i,x"FFFF");
+				end loop;	
+			end loop;
+		end loop;		
+		wait for 5 ms;
+		assert false report "Done" severity error;
+        -- draw_text(regH,8,"abcdefgh");
+        -- write_memory(regH,SDRAM,CSR,CSR_WRITE,x"00000"&BUFFER_REG,x"0001");
+        -- assert false report "1.Check if clear_mem was correctly done" severity note;
+        -- src_addr:=(others=>'0');
+        -- for y in 0 to 100 loop
+            -- for x in 0 to 799 loop
+                -- src_addr:=to_unsigned(y*1024+x,HADDR_WIDTH);
+                -- src_addr(20):='1';
+                -- expected_data:=y*1024+x;
+                -- read_memory(regH,SDRAM,MEM,'0',src_addr,data);
+                -- assert data=to_unsigned(expected_data,16) 
+                -- report "Read data error! Expected:"&integer'image(expected_data)&
+                -- " Actual:"&integer'image(to_integer(data))
+                -- severity error;
+            -- end loop;
+        -- end loop;	
+        -- write text
+        -- data_write(regH,x"40"&to_unsigned(10,8));
+        -- for b in 1 to 5 loop
+            -- data_write(regH,to_unsigned(b*2,8)&to_unsigned(b*2+1,8));
+        -- end loop; 
+        -- read BUILD ID
+        -- data_write(regH,x"36"&x"05");
+        -- data_write(regH,x"0000");
+        -- data_read(regH,data);
+        -- wait for 10 us;
+        -- End of Test
+        --finish;
+        -- 2. Write data to SDRAM
+        -- src_addr:=x"0F0000";
+        -- assert false report "2.Write data to SDRAM" severity note;
+        -- for a in 0 to 1023 loop
+            -- write_memory(regH,SDRAM,MEM,'0',src_addr,to_unsigned(a,16));
+            -- src_addr:=src_addr+1;
+        -- end loop;
+        -- wait for 1 us;
+        ----3. Copy from SDRAM to the back buffer
+        -- src_addr:=x"0F0000";
+        -- dst_addr:=x"100100";
+        -- assert false report "3. Copy from SDRAM to the back buffer" severity note;
+        -- for a in 0 to 0 loop
+            -- mem_copy(regH,SDRAM,SDRAM,src_addr+a*512,dst_addr+a*512,512);
+        -- end loop;
+        -- wait for 1 us;
+        ----check
+        -- for a in 0 to 1023 loop
+            -- expected_data:=a;
+            -- read_memory(regH,SDRAM,MEM,'0',dst_addr,data);
+            -- assert data=to_unsigned(expected_data,16)
+            -- report "Read data error! Expected:"&integer'image(expected_data)&
+            -- " Actual:"&integer'image(to_integer(data))
+            -- severity error;
+            -- dst_addr:=dst_addr+1;
+        -- end loop;
+        -- wait for 1 us;        
+        -- 2. Unlock FLASH block  
+        src_addr:=x"001000";
+        assert false report "2.Unlock the block" severity note;
+        write_memory(regH,FLASH,MEM,'0',src_addr,x"0060");
+        write_memory(regH,FLASH,MEM,'0',src_addr,x"00D0");
+        -- 2. Write to FLASH 
+        wait for 10 us;
+        src_addr:=x"001000";
+        assert false report "2.Write to FLASH" severity note;
+        for a in 1 to 64 loop
+            write_memory(regH,FLASH,MEM,'0',src_addr,x"0010");
+            write_memory(regH,FLASH,MEM,'0',src_addr,to_unsigned(a,16));
+            src_addr:=src_addr+1;
+            wait for 150 us;
+        end loop;
+        -- 3. Copy from FLASH to the back buffer
+        src_addr:=x"001000";
+        dst_addr:=x"100500";
+        assert false report "3. Copy from FLASH to the back buffer" severity note;
+        write_memory(regH,FLASH,MEM,'0',src_addr,x"00FF");
+        for a in 0 to 50 loop
+            mem_copy(regH,FLASH,SDRAM,src_addr,dst_addr+a*64,64);
+        end loop;
+        wait for 1 us;        
+        -- 4 Copy from back buffer to SDRAM and check it
+        src_addr:=x"100500";
+        dst_addr:=x"0F1000";
+        assert false report "4. Copy from back buffer to SDRAM and check it" severity note;
+        for a in 0 to 15 loop
+            mem_copy(regH,SDRAM,SDRAM,src_addr+a*16,dst_addr+a*16,16);
+        end loop;
+        wait for 1 us;        
+        src_addr:=x"0F1000";
+        --check
+        for a in 0 to 15 loop
+            expected_data:=512+a;
+            read_memory(regH,SDRAM,MEM,'0',src_addr,data);
+            assert data=to_unsigned(expected_data,16)
+            report "Read data error! Expected:"&integer'image(expected_data)&
+            " Actual:"&integer'image(to_integer(data))
+            severity error;
+            src_addr:=src_addr+1;
+        end loop;
+        wait for 1 us;
+        -- 5. Copy from FLASH to SDRAM
+        src_addr:=x"001000";
+        assert false report "5. Copy from FLASH to SDRAM and then check it" severity note;
+        write_memory(regH,FLASH,MEM,'0',src_addr,x"00FF");
+        mem_copy(regH,FLASH,SDRAM,x"001000",x"0F2000",16);
+        wait for 1 us;
+        src_addr:=x"0F2000";
+        -- check
+        for x in 0 to 15 loop
+            expected_data:=512+x;
+            read_memory(regH,SDRAM,MEM,'0',src_addr,data);
+            assert data=to_unsigned(expected_data,16) 
+            report "Read data error! Expected:"&integer'image(expected_data)&
+            " Actual:"&integer'image(to_integer(data))
+            severity error;
+            src_addr:=src_addr+1;
+        end loop;
+        wait for 10 us;
+        -- End of Test
+        finish;
+    end process;
+end tb;

@@ -1,0 +1,271 @@
+-------------------------------------------------------------------------------
+--
+-- File         : Acc_tb.vhd
+-- Author       : Dominik Domanski
+-- Date         : 29/03/10
+--
+-- Last Check-in :
+-- $Revision: 59 $
+-- $Author: dzunior $
+-- $Date: 2010-08-12 20:43:06 +0200 (jue, 12 ago 2010) $
+--
+-------------------------------------------------------------------------------
+-- Description:
+--
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_textio.all;
+use ieee.numeric_std.all;
+library std;
+use std.textio.all;
+library Acc;
+use Acc.common.all;
+use Acc.AccTypes.all;
+library acc_tb;
+use Acc_tb.Acc_tb_pkg.all;
+library GS_random;
+use GS_random.rng2.all;
+
+entity Acc_tb is
+end Acc_tb;
+
+architecture tb of Acc_tb is
+    signal clk: std_logic:='0';
+    signal sample_input: std_logic_vector (15 downto 0);
+    signal sclk: std_logic:='0';
+    signal addr: std_logic_vector (2 downto 0);
+    signal data: std_logic_vector (15 downto 0);
+    signal wnr: std_logic;
+    signal req: std_logic;
+    signal arst: std_logic:='0';
+    signal ack: std_logic;
+    signal mosi: std_logic:='0';
+    signal miso: std_logic:='0';
+    signal ss_n: std_logic:='1';
+    signal hsync_n: std_logic;
+    signal vsync_n: std_logic;
+    signal  hostctrl_full : std_logic;
+    signal hostctrl_ack : std_logic;
+    -- SDRAM side
+    signal sData    : std_logic_vector(MEM_DATA_WIDTH-1 downto 0);
+    signal cke      : std_logic;  -- clock-enable to SDRAM
+    signal ce_n     : std_logic;  -- chip-select to SDRAM
+    signal ras_n    : std_logic;  -- SDRAM row address strobe
+    signal cas_n    : std_logic;  -- SDRAM column address strobe
+    signal we_n     : std_logic;  -- SDRAM write enable
+    signal ba       : std_logic_vector(1 downto 0);  -- SDRAM bank address
+    signal sAddr    : std_logic_vector(SADDR_WIDTH-1 downto 0);  -- SDRAM row/column address
+    signal sDIn     : std_logic_vector(MEM_DATA_WIDTH-1 downto 0);  -- data from SDRAM
+    signal sDOut    : std_logic_vector(MEM_DATA_WIDTH-1 downto 0);  -- data to SDRAM
+    signal sDOutEn  : std_logic;  -- true if data is output to SDRAM on sDOut
+    signal dqmh     : std_logic;  -- enable upper-byte of SDRAM databus if true
+    signal dqml     : std_logic;  -- enable lower-byte of SDRAM databus if true
+    signal display_rst      : std_logic;
+    signal core_rst         : std_logic;
+    signal dclk,lclk        : std_logic:='0';
+    signal flash_ce	: std_logic;								-- CEn signal to left SRAM bank.
+    signal flash_oe	: std_logic;								-- OEn signal to left SRAM bank.
+    signal flash_we	: std_logic;								-- WEn signal to left SRAM bank.
+    signal flash_addr : std_logic_vector (21 downto 0);	-- Address bus to left SRAM bank.
+    signal flash_data : std_logic_vector (15 downto 0);	-- Data bus to left SRAM bank.
+    -------------------------------------------------------------
+    -- Component declaration of the User Test
+    -------------------------------------------------------------
+    component test
+    end component;
+
+begin
+    ------------------------------------------------------------
+    -- Component Instatiation of the User Test
+    ------------------------------------------------------------
+    MAIN_TEST: test;
+
+    lclk<=NOT lclk after (CORE_CLK_PERIOD/2);
+    dclk<=NOT dclk after (DISPLAY_CLK_PERIOD/2);
+    sclk<=NOT sclk after (SCLK_PERIOD/2);
+    sData <= sDOut when sDOutEn = YES else (others => 'Z');
+    
+    main : process
+        variable outline : LINE;
+    begin
+        arst<='1';
+        display_rst <= '1';
+        core_rst <= '1';
+        wait for 100 ns;
+        arst<='0';
+        display_rst <= '0';
+        core_rst <= '0';
+        WRITE(outline,string'("Reset done ..."));WRITELINE(output,outline);
+        start<='1';
+        wait until falling_edge(start);
+    end process main;
+
+    process
+
+    begin
+        wait until rising_edge(sclk);
+        if regH.initWr='1' then
+            if hostctrl_full='0' then
+                regH.accept<='0';
+                ss_n <= '0';
+                for i in 15 downto 0 loop
+                    mosi<=regH.data(i);
+                    wait until falling_edge(sclk);
+                end loop;
+                ss_n <= '1';
+                wait until rising_edge(sclk);
+                regH.accept<='1';
+            end if; 
+        elsif regH.initRd='1' then
+            wait until hostctrl_ack='1';
+            regH.accept<='0';
+            ss_n <= '0';
+            for i in 15 downto 0 loop
+                regH.data(i)<= miso;
+                wait until falling_edge(sclk);
+            end loop;
+            ss_n <= '1';
+            wait until rising_edge(sclk);   
+        end if;
+    end process;
+
+    U_TEST:entity Acc.Accelerator
+    port map (
+        rst             => arst,
+        --clk             => clk,
+        -- these signals will be generated by DCMs in final stage
+        lclk            => lclk,
+        dclk            => dclk,
+        core_rst        => core_rst,
+        display_rst     => display_rst,
+        sclk            => sclk,
+        mosi            => mosi,
+        miso            => miso,
+        ss_n            => ss_n,
+        hostctrl_full   => hostctrl_full,
+        hostctrl_ack    => hostctrl_ack,
+        r               => open,
+        g               => open,
+        b               => open,
+        hsync_n         => hsync_n,
+        vsync_n         => vsync_n,
+        cke             => cke,
+        ce_n            => ce_n,
+        ras_n           => ras_n,
+        cas_n           => cas_n,
+        we_n            => we_n,
+        ba              => ba,
+        sAddr           => sAddr,
+        sDIn            => sData,
+        sDOut           => sDOut,
+        sDOutEn         => sDOutEn,
+        dqmh            => dqmh,
+        dqml            => dqml,
+        flash_ce        => flash_ce,
+        flash_oe        => flash_oe,  
+        flash_we        => flash_we,  
+        flash_addr      => flash_addr,
+        flash_data      => flash_data
+        );
+
+    SDRAM_model: entity work.mt48lc16m16a2
+      port map(
+        BA0     => ba(0),
+        BA1     => ba(1),
+        DQMH    => dqmh,
+        DQML    => dqml,
+        DQ0     => sData(0),
+        DQ1     => sData(1),
+        DQ2     => sData(2),
+        DQ3     => sData(3),
+        DQ4     => sData(4),
+        DQ5     => sData(5),
+        DQ6     => sData(6),
+        DQ7     => sData(7),
+        DQ8     => sData(8),
+        DQ9     => sData(9),
+        DQ10    => sData(10),
+        DQ11    => sData(11),
+        DQ12    => sData(12),
+        DQ13    => sData(13),
+        DQ14    => sData(14),
+        DQ15    => sData(15),
+        CLK     => lclk,
+        CKE     => cke,
+        A0      => sAddr(0),
+        A1      => sAddr(1),
+        A2      => sAddr(2),
+        A3      => sAddr(3),
+        A4      => sAddr(4),
+        A5      => sAddr(5),
+        A6      => sAddr(6),
+        A7      => sAddr(7),
+        A8      => sAddr(8),
+        A9      => sAddr(9),
+        A10     => sAddr(10),
+        A11     => sAddr(11),
+        A12     => sAddr(12),
+        WENeg   => we_n,
+        RASNeg  => ras_n,
+        CSNeg   => ce_n,
+        CASNeg  => cas_n
+    );
+
+    -- FLASH_model : entity work.m28w320cb
+    -- port map(
+        -- A20     => flash_addr(20),        
+        -- A19     => flash_addr(19),       
+        -- A18     => flash_addr(18),       
+        -- A17     => flash_addr(17),       
+        -- A16     => flash_addr(16),            
+        -- A15     => flash_addr(15),            
+        -- A14     => flash_addr(14),       
+        -- A13     => flash_addr(13),            
+        -- A12     => flash_addr(12),            
+        -- A11     => flash_addr(11),       
+        -- A10     => flash_addr(10),            
+        -- A9      => flash_addr(9),           
+        -- A8      => flash_addr(8),       
+        -- A7      => flash_addr(7),           
+        -- A6      => flash_addr(6),            
+        -- A5      => flash_addr(5),       
+        -- A4      => flash_addr(4),            
+        -- A3      => flash_addr(3),            
+        -- A2      => flash_addr(2),       
+        -- A1      => flash_addr(1),            
+        -- A0      => flash_addr(0),            
+        -- D15     => flash_data(15),       
+        -- D14     => flash_data(14),       
+        -- D13     => flash_data(13),       
+        -- D12     => flash_data(12),       
+        -- D11     => flash_data(11),       
+        -- D10     => flash_data(10),       
+        -- D9      => flash_data(9),        
+        -- D8      => flash_data(8),        
+        -- D7      => flash_data(7),        
+        -- D6      => flash_data(6),        
+        -- D5      => flash_data(5),        
+        -- D4      => flash_data(4),        
+        -- D3      => flash_data(3),        
+        -- D2      => flash_data(2),        
+        -- D1      => flash_data(1),        
+        -- D0      => flash_data(0),        
+        -- CENeg   => flash_ce,
+        -- OENeg   => flash_oe,       
+        -- WENeg   => flash_we,       
+        -- RPNeg   => arst,      
+        -- WPNeg   => '1',       
+        -- VPP     => '1'
+    -- );          
+    
+    -- U_GEN:entity A =>cc.gen
+    -- port map(     =>
+        -- clk             =>=> clk,
+        -- rst             =>=> arst,
+        -- host_data =>      => host_data,
+        -- host_data_valid => host_data_valid
+    -- );
+
+end architecture tb;

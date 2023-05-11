@@ -1,0 +1,186 @@
+# EVBfpga MMfpga12 PROPOX www.propox.com
+# main clock 50MHz
+NET "clk" LOC = P55;
+NET "clk" TNM_NET = "clk";
+TIMESPEC TS_clk = PERIOD "clk" 20 ns HIGH 50 %;
+
+#VGA
+NET "vsync_n" LOC = P107;
+NET "hsync_n" LOC = P108;
+NET "blank" LOC = P132;
+NET "b[0]" LOC = P123;
+NET "b[1]" LOC = P122;
+NET "b[2]" LOC = P102;
+NET "b[3]" LOC = P105;
+NET "b[4]" LOC = P104;
+NET "g[0]" LOC = P113;
+NET "g[1]" LOC = P131;
+NET "g[2]" LOC = P130;
+NET "g[3]" LOC = P100;
+NET "g[4]" LOC = P99;
+NET "g[5]" LOC = P103;
+NET "r[0]" LOC = P119;
+NET "r[1]" LOC = P118;
+NET "r[2]" LOC = P116;
+NET "r[3]" LOC = P98;
+NET "r[4]" LOC = P112;
+
+# Host interface
+NET "host_data[0]" LOC = P1;
+NET "host_data[1]" LOC = P2;
+NET "host_data[2]" LOC = P4;
+NET "host_data[3]" LOC = P5;
+NET "host_data[4]" LOC = P6;
+NET "host_data[5]" LOC = P7;
+NET "host_data[6]" LOC = P8;
+NET "host_data[7]" LOC = P10;
+NET "strobe_n" LOC = P11;
+NET "op_done" LOC = P12;
+NET "rnw_n" LOC = P13;
+
+# SDRAM memory tester pin assignments
+# clock to SDRAM
+NET "lclk" LOC = P56;
+# SDRAM clock enable
+NET "cke" LOC = P57;
+# SDRAM chip-select
+NET "ce_n" LOC = P73;
+# Row Address Strobe
+NET "ras_n" LOC = P85;
+# Column Address Strobe
+NET "cas_n" LOC = P82;
+# Write enable
+NET "we_n" LOC = P84;
+#Bank select 
+NET "ba[0]" LOC = P87;
+NET "ba[1]" LOC = P86;
+
+#Address
+NET "Addr[0]" LOC = P77;
+NET "Addr[1]" LOC = P78;
+NET "Addr[2]" LOC = P76;
+NET "Addr[3]" LOC = P79;
+NET "Addr[4]" LOC = P80;
+NET "Addr[5]" LOC = P83;
+NET "Addr[6]" LOC = P70;
+NET "Addr[7]" LOC = P69;
+NET "Addr[8]" LOC = P68;
+NET "Addr[9]" LOC = P63;
+NET "Addr[10]" LOC = P74;
+NET "Addr[11]" LOC = P60;
+NET "Addr[12]" LOC = P59;
+NET "Addr[13]" LOC = P28;
+NET "Addr[14]" LOC = P24;
+NET "Addr[15]" LOC = P25;
+NET "Addr[16]" LOC = P20;
+NET "Addr[17]" LOC = P97;
+NET "Addr[18]" LOC = P96;
+NET "Addr[19]" LOC = P95;
+NET "Addr[20]" LOC = P21;
+NET "Addr[21]" LOC = P23;
+#Data  
+NET "Data[0]" LOC = P26;
+NET "Data[1]" LOC = P27;
+NET "Data[2]" LOC = P30;
+NET "Data[3]" LOC = P31;
+NET "Data[4]" LOC = P35;
+NET "Data[5]" LOC = P36;
+NET "Data[6]" LOC = P32;
+NET "Data[7]" LOC = P33;
+NET "Data[8]" LOC = P52;
+NET "Data[9]" LOC = P51;
+NET "Data[10]" LOC = P50;
+NET "Data[11]" LOC = P47;
+NET "Data[12]" LOC = P46;
+NET "Data[13]" LOC = P44;
+NET "Data[14]" LOC = P41;
+NET "Data[15]" LOC = P40;
+ 
+NET "dqmh" LOC = P53;
+NET "dqml" LOC = P90;
+
+# FLASH memory
+NET "flash_ce_n" LOC = P18;
+NET "flash_oe_n" LOC = P17;
+NET "flash_we_n" LOC = P89;
+NET "flash_rp_n" LOC = P92;
+NET "flash_wp_n" LOC = P93;
+
+TEMPERATURE  = 85 C;
+VOLTAGE  = 1.14 V;
+
+NET "Addr[0]" SLEW = FAST;
+NET "Addr[10]" SLEW = FAST;
+NET "Addr[11]" SLEW = FAST;
+NET "Addr[12]" SLEW = FAST;
+NET "Addr[13]" SLEW = FAST;
+NET "Addr[14]" SLEW = FAST;
+NET "Addr[15]" SLEW = FAST;
+NET "Addr[16]" SLEW = FAST;
+NET "Addr[17]" SLEW = FAST;
+NET "Addr[18]" SLEW = FAST;
+NET "Addr[19]" SLEW = FAST;
+NET "Addr[1]" SLEW = FAST;
+NET "Addr[20]" SLEW = FAST;
+NET "Addr[21]" SLEW = FAST;
+NET "Addr[2]" SLEW = FAST;
+NET "Addr[3]" SLEW = FAST;
+NET "Addr[4]" SLEW = FAST;
+NET "Addr[5]" SLEW = FAST;
+NET "Addr[6]" SLEW = FAST;
+NET "Addr[7]" SLEW = FAST;
+NET "Addr[8]" SLEW = FAST;
+NET "Addr[9]" SLEW = FAST;
+NET "Data[0]" SLEW = FAST;
+NET "Data[10]" SLEW = FAST;
+NET "Data[11]" SLEW = FAST;
+NET "Data[12]" SLEW = FAST;
+NET "Data[13]" SLEW = FAST;
+NET "Data[14]" SLEW = FAST;
+NET "Data[15]" SLEW = FAST;
+NET "Data[1]" SLEW = FAST;
+NET "Data[2]" SLEW = FAST;
+NET "Data[3]" SLEW = FAST;
+NET "Data[4]" SLEW = FAST;
+NET "Data[5]" SLEW = FAST;
+NET "Data[6]" SLEW = FAST;
+NET "Data[7]" SLEW = FAST;
+NET "Data[8]" SLEW = FAST;
+NET "Data[9]" SLEW = FAST;
+NET "b[0]" SLEW = FAST;
+NET "b[1]" SLEW = FAST;
+NET "b[2]" SLEW = FAST;
+NET "b[3]" SLEW = FAST;
+NET "b[4]" SLEW = FAST;
+NET "ba[0]" SLEW = FAST;
+NET "ba[1]" SLEW = FAST;
+NET "blank" SLEW = FAST;
+NET "cas_n" SLEW = FAST;
+NET "ce_n" SLEW = FAST;
+NET "cke" SLEW = FAST;
+NET "clk" SLEW = FAST;
+NET "dqmh" SLEW = FAST;
+NET "dqml" SLEW = FAST;
+NET "flash_ce_n" SLEW = FAST;
+NET "flash_oe_n" SLEW = FAST;
+NET "flash_rp_n" SLEW = FAST;
+NET "flash_we_n" SLEW = FAST;
+NET "flash_wp_n" SLEW = FAST;
+NET "g[0]" SLEW = FAST;
+NET "g[1]" SLEW = FAST;
+NET "g[2]" SLEW = FAST;
+NET "g[3]" SLEW = FAST;
+NET "g[4]" SLEW = FAST;
+NET "g[5]" SLEW = FAST;
+NET "hsync_n" SLEW = FAST;
+NET "lclk" SLEW = FAST;
+NET "r[0]" SLEW = FAST;
+NET "r[1]" SLEW = FAST;
+NET "r[2]" SLEW = FAST;
+NET "r[3]" SLEW = FAST;
+NET "r[4]" SLEW = FAST;
+NET "ras_n" SLEW = FAST;
+NET "vsync_n" SLEW = FAST;
+NET "we_n" SLEW = FAST;
+NET "strobe_n" PULLUP;
+NET "rnw_n" PULLDOWN;
